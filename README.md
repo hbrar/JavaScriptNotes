@@ -1,17 +1,16 @@
 #   JavaScript
 
-#   Variables
-
-##  Unary plus i.e. +'2' is same as Number('2')
+##  Unary plus 
+    +'2' is same as Number('2')
 
 ##  Operations run from left to right 
-    eg alert(2 + 2 + '1' ); // "41" and not "221"
+    alert(2 + 2 + '1' ); // "41" and not "221"
 
 ##  If one of the operands is a string, the other one is converted to a string too.
-    eg alert( '1' + 2 ); // "12"
+    alert( '1' + 2 ); // "12"
 
 ##  An operator always returns a value. Assignment is also an operator so always returns a value.         Chained assignments evaluate from right to left.
-    eg a = b = c = 2 + 2; 
+    a = b = c = 2 + 2; 
     First c = 2 + 2 is evaluated and it returns a value of 4
     Then b = 4 is evaulated and it returns a value of 4 and so on.
 
@@ -30,7 +29,7 @@
 #   Comparisons
 
 ##  When comparing values of different types, JavaScript converts the values to numbers
-    eg alert( '01' == 1 ); // true, string '01' becomes a number 1
+    alert( '01' == 1 ); // true, string '01' becomes a number 1
     but in case of "23" > "20", values won't be converted to numbers since they are of same type.
     Hence dictionary order will be used for comparison of strings "23" and "20"
     
@@ -74,9 +73,9 @@
     result = value1 || value2 || value3;
     The OR || operator does the following:
 
-    Evaluates operands from left to right.
-    For each operand, converts it to boolean. If the result is true, stops and returns the original value of that operand.
-    If all operands have been evaluated (i.e. all were false), returns the last operand.
+### Evaluates operands from left to right.
+### For each operand, converts it to boolean. If the result is true, stops and returns the original value of that operand.
+### If all operands have been evaluated (i.e. all were false), returns the last operand.
 
     alert( undefined || null || 0 ); // 0 (all falsy, returns the last value)
     alert( 1 || 0 ); // 1 (1 is truthy)
@@ -88,27 +87,25 @@
 
     alert( name ); // selects "John" – the first truthy value
 
-    OR evaluates and tests them from left to right. The evaluation stops when a truthy value is reached, and the value is returned. This process is called “a short-circuit evaluation” because   it goes as short as possible from left to right
+### OR evaluates and tests them from left to right. The evaluation stops when a truthy value is reached, and the value is returned. This process is called “a short-circuit evaluation” because   it goes as short as possible from left to right
 
 ##  AND finds the first falsy value   
 
     result = value1 && value2 && value3;
-    The AND && operator does the following:
+##  The AND && operator does the following:
 
-    Evaluates operands from left to right.
-    For each operand, converts it to a boolean. If the result is false, stops and returns the original value of that operand.
-    If all operands have been evaluated (i.e. all were truthy), returns the last operand
+### Evaluates operands from left to right.
+### For each operand, converts it to a boolean. If the result is false, stops and returns the original value of that operand.
+### If all operands have been evaluated (i.e. all were truthy), returns the last operand
 
     alert( 1 && 2 && null && 3 ); // null
 
 ##  A double NOT !! is sometimes used for converting a value to boolean type:
-    Just like unary + is same as Number() !! is same as Boolean()
+##  Just like unary + is same as Number() !! is same as Boolean()
 
 #   Functions
     
-    When JavaScript prepares to run the script or a code block, it first looks for Function Declarations in it and creates the functions. As a result, a function declared as a Function Declaration can be called earlier than it is defined.
-
-    For example, this works:
+##  When JavaScript prepares to run the script or a code block, it first looks for Function Declarations in it and creates the functions. As a result, a function declared as a Function Declaration can be called earlier than it is defined. For example, this works:
 
     sayHi("John"); // Hello, John
 
@@ -116,7 +113,7 @@
     alert( `Hello, ${name}` );
     }
 
-    When a Function Declaration is made within a code block, it is visible everywhere inside that block. But not outside of it.
+##  When a Function Declaration is made within a code block, it is visible everywhere inside that block. But not outside of it.
 
     let age = prompt("What is your age?", 18);
 
@@ -149,10 +146,192 @@
     };
     */
 
-    if we have only one argument, then parentheses can be omitted, making that even shorter:
+### if we have only one argument, then parentheses can be omitted, making that even shorter:
     let double = n => n * 2;
 
-    If there are no arguments, parentheses should be empty (but they should be present):
+### If there are no arguments, parentheses should be empty (but they should be present):
     let sayHi = () => alert("Hello!");
 
 #   Object
+
+##  Object Creation
+    let user = new Object(); // "object constructor" syntax
+    let user = {};  // "object literal" syntax
+    
+##  key is stored as a string
+
+##  Square brackets allow property name to be result of any expression like from a variable:
+
+    let key = "likes birds";
+    // same as user["likes birds"] = true;
+    user[key] = true;
+    
+### Here, the variable key may be calculated at run-time or depend on the user input. And then we use it to access the property
+
+##  Computed properties
+
+### We can use square brackets in an object literal. That’s called computed properties.
+
+    let fruit = prompt("Which fruit to buy?", "apple");
+
+    let bag = {
+      [fruit]: 5, // the name of the property is taken from the variable fruit
+    };
+
+    alert( bag.apple ); // 5 if fruit="apple"
+
+### [fruit] means that the property name should be taken from fruit.
+
+##  Property value shorthand
+
+### In real code we often use existing variables as values for property names.
+
+    function makeUser(name, age) {
+      return {
+        name: name,
+        age: age
+        // ...other properties
+      };
+    }
+
+    let user = makeUser("John", 30);
+    alert(user.name); // John
+    
+### Use property value shorthand to make it shorter. Instead of name:name we can just write name, like this:
+
+    function makeUser(name, age) {
+     return {
+       name, // same as name: name
+       age   // same as age: age
+       // ...
+      };
+    }
+##  Existence check
+
+### Use 'in' to check if property exists on an object.
+
+    let user = { name: "John", age: undefined };
+
+    alert( "name" in user ); // true, user.name exists
+    alert( "age" in user ); // true, user.age exists
+    alert( user.age ); // undefined, user.age exists but value is undefined
+    alert( user.address ); //undefined, user.address does not exist
+### Do not use `name in user` in above code. JS engine will look for a variable name as key of the property
+
+##  Walk over properties
+
+    let user = {
+      name: "John", 
+      age: 30,
+      isAdmin: true
+    };
+
+    for (let key in user) {
+      // keys
+      alert( key );  // name, age, isAdmin
+      // values for the keys
+      alert( user[key] ); // John, 30, true
+    }
+    
+### Below code return undefined since prop is a variable and variable as key to property can only be used using obj[key] notation and not obj.key
+
+    for(let prop in user){
+        console.log(user.prop)
+    }
+    
+##  Are objects ordered?
+
+### integer properties are sorted, others appear in creation order
+
+##  Copying by reference
+
+### When an object variable is copied – the reference is copied, the object is not duplicated.
+
+    let user = { name: "John", age: 10 };
+    admin = user
+
+    //user gets updated as well
+    admin.city = 'long beach'
+
+    console.log(user)
+
+    // admin now holds reference to a new object and is no longer referencing user
+    admin = {name: "admin"}
+    console.log(admin)
+    console.log(user)
+ 
+##  Comparison by reference
+
+### Two objects are equal only if they are the same object.
+    let a = {};
+    let b = a; // copy the reference
+
+    alert( a == b ); // true, both variables reference the same object
+    alert( a === b ); // true
+    
+    let c = {};
+    let d = {}; // two independent objects
+
+    alert( c == d ); // false
+    
+##  Const object
+
+### A const object can be changed but can't be assigned a new object.
+
+    const user = { name: "John", age: 10 };
+    user.age = "26" //no issues
+    user = {name: "admin"} //error
+   
+##  Cloning and merging, Object.assign
+
+    Object.assign(dest, [src1, src2, src3...])//this statement returns the new object
+    
+### It copies the properties of all objects src1, ..., srcN into dest
+
+    let user = { name: "John" };
+    let permissions1 = { canView: true };
+    let permissions2 = { canEdit: true };
+
+    // copies all properties from permissions1 and permissions2 into user
+    Object.assign(user, permissions1, permissions2);
+
+    // now user = { name: "John", canView: true, canEdit: true }
+### If the receiving object (user) already has the same named property, it will be overwritten. 
+
+### Create a clone of object user
+
+    let clone = Object.assign({}, user);
+    
+    //OR
+    
+    const user = { name: "John", age: 10 };
+    let clone = {}
+    Object.assign(clone, user);
+    console.log(clone)
+    
+    //TypeError: Cannot convert undefined or null to object
+    
+    const user = { name: "John", age: 10 };
+    let clone
+    Object.assign(clone, user);
+    console.log(clone)
+  
+### What if property is not a primitive?
+
+    let user = {
+      name: "John",
+      sizes: {
+        height: 182,
+        width: 50
+      }
+    };
+
+    let clone = Object.assign({}, user);
+
+    alert( user.sizes === clone.sizes ); // true, same object
+
+    // user and clone share sizes
+    user.sizes.width++;       // change a property from one place
+    alert(clone.sizes.width); // 51, see the result from the other one
+    
+### User `_.cloneDeep(obj)` method of lodash library for deep cloning in cases like above.
