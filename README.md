@@ -158,7 +158,7 @@
     let user = new Object(); // "object constructor" syntax
     let user = {};  // "object literal" syntax
     
-##  key is stored as a string
+##  key is stored as a string. Object property keys may be either of string type, or of symbol type. Not numbers, not booleans, only strings or symbols, these two types.
 
 ##  Square brackets allow property name to be result of any expression like from a variable:
 
@@ -335,3 +335,117 @@
     alert(clone.sizes.width); // 51, see the result from the other one
     
 ### User `_.cloneDeep(obj)` method of lodash library for deep cloning in cases like above.
+
+#   Symbol Type
+
+##  Overview
+### Symbol” value represents a unique identifier.A value of this type can be created using Symbol().
+    
+    // id is a new symbol
+    let id = Symbol();
+
+    // id is a symbol with the description "id"
+    let id = Symbol("id");
+
+###  Symbols are guaranteed to be unique. Even if we create many symbols with the same description, they are different values. Most values in JavaScript support implicit conversion to a string. Symbols don’t auto-convert to a string.
+
+###  To get description of symbol.
+
+    let id = Symbol("id");
+    alert(id.toString()); // Symbol(id)
+
+    //OR
+    alert(id.description); // id
+
+##  Hidden Properties
+
+### Symbols allow us to create “hidden” properties of an object, that no other part of code can occasionally access or overwrite. Imagine that another script wants to have its own “id” property inside user, for its own purposes. That may be another JavaScript library, so the scripts are completely unaware of each other.
+
+    let user = { name: "John" };
+
+    //one script creates id
+    let id = Symbol("id");
+    user[id] = "ID Value";
+
+    //Another script creates its own id
+    let id = Symbol("id")
+    user[id] = "Different ID Value"
+
+### There will be no conflict, because symbols are always different, even if they have the same name. If we use "id" instead of a symbol, there will be conflict.
+
+    let user = { name: "John" };
+
+    // our script uses "id" property
+    user.id = "ID Value";
+
+    // ...if later another script the uses "id" for its purposes...
+
+    user.id = "Their id value"
+    // boom! overwritten! it did not mean to harm the colleague, but did it!
+
+##  Symbols in a literal
+
+### If we want to use a symbol in an object literal, we need square brackets.
+
+    let id = Symbol("id");
+
+    let user = {
+    name: "John",
+    [id]: 123 // not just "id: 123"
+    };
+
+##  Symbols are skipped by for…in while Object.assign copies both string and symbol properties.
+
+##  Personal Recommendation: Always quote keys that are not Symbol.
+
+    //String key
+
+    let user = {
+        "name" : "John" //instead of name : "John"
+    }
+
+    user["name"] //instead of user[name]
+
+    //Symbol key
+    let name = Symbol("Username")
+    let user = {
+        [name] : "John"
+    }
+    user[name]
+
+##  Global symbols
+
+### If you want same-named symbols to be same entities.
+
+    // read from the global registry
+    let id = Symbol.for("id"); // if the symbol did not exist, it is created
+
+    // read it again
+    let idAgain = Symbol.for("id");
+
+    // the same symbol
+    alert( id === idAgain ); // true
+
+#   Function
+
+##  Method shorthand
+
+### Shorter syntax is only for methods in an object literal, not for function.
+
+    let user = {
+    sayHi: function() {
+        alert("Hello");
+    }
+    };
+
+    // method shorthand looks better, right?
+    let user = {
+    sayHi() { // same as "sayHi: function()"
+        alert("Hello");
+    }
+    };
+
+    //Outside object literal, this form results in SyntaxError
+    greet(){
+
+    }    
