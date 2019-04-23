@@ -426,8 +426,6 @@
     // the same symbol
     alert( id === idAgain ); // true
 
-#   Function
-
 ##  Method shorthand
 
 ### Shorter syntax is only for methods in an object literal, not for function.
@@ -448,4 +446,169 @@
     //Outside object literal, this form results in SyntaxError
     greet(){
 
-    }    
+    } 
+  
+##  Object methods, "this"
+
+### "this" is not bound to any function. The value of this is evaluated during the run-time. It points to the object that called it.
+
+    let user = {
+        name : "Jon"
+    }
+
+    let admin = {
+        name : "Snow"
+    }
+
+    function greet(){
+        console.log(`Hi!, I am ${this.name}`)
+    }
+
+    user.sayHi =  greet
+    admin.sayHi = greet
+    user.sayHi() //Hi!, I am Jon
+    admin['sayHi']() //Hi!, I am Snow
+    greet() //undefined ...."this" is global object here which does not have variable "name". Global object is window in browser and module in Nodejs
+
+### Example where "this" is easily lost
+
+    let user = {
+      name: "John",
+      hi() { alert(this.name); },
+      bye() { alert("Bye"); }
+    };
+
+    user.hi(); // John (the simple call works)
+
+    // now let's call user.hi or user.bye depending on the name
+    (user.name == "John" ? user.hi : user.bye)(); // Error!...
+    
+    //Above line of code is processed as below. 
+    //  => (user.name == "John" ? alert(this.name) : alert("Bye"))() 
+    //  => (alert(this.name))() // Now "this" is Global object
+
+### Arrow functions have no “this”. Arrow functions are special: they don’t have their “own” this. If we reference this from such a function, it’s taken from the outer “normal” function.
+
+##  Constructor, operator "new"
+### Constructor functions technically are regular functions and used to create many similar objects. There are two conventions though:
+
+### 1. They are named with capital letter first.
+### 2. They should be executed only with "new" operator.
+
+### When a function is executed as new User(...), it does the following steps:
+
+### 1. A new empty object is created and assigned to this.
+### 2. The function body executes. Usually it modifies this, adds new properties to it.
+### 3. The value of this is returned.
+
+    function User(name) {
+      // this = {};  (implicitly)
+
+      // add properties to this
+      this.name = name;
+      this.isAdmin = false;
+
+      // return this;  (implicitly)
+    }
+
+    Example:
+
+    function Movie(title){
+      this.title = title;
+      this.director =  null;
+      this.playMovie = ()=>console.log(`Now Playing - ${this.title}`) //Arrow function binds this to outer function
+    }
+    m = new Movie("Batman")
+    m.playMovie()
+    console.log(m)
+
+### Don't confuse function above with object literal syntax. Shorthand notations for properties won't work inside constructor function.
+
+    function Movie(title){
+      title, //Error because of comman and undefined variable - title
+      director, //Error because of comman and undefined variable - director
+      playMovie(){ //Error because function keyword is missing
+        console.log(`Now Playing - ${this.title}`)
+      }
+    }
+
+### Below object literal notation is perfectly fine provided title and director variables are defined already.
+
+    let title = "Batman"
+    let director = "Chris"
+    let m = {
+      title,
+      director,
+      playMovie(){
+         console.log(`Now Playing - ${this.title} by ${this.director}`) //Now Playing - Batman by Chris
+      }
+      //playMovie : () => console.log(`Now Playing - ${this.title} by ${this.director}`) //returns undefined for "this" since arrow function does not bind it.
+    }
+
+### Rewrite constructor function Movie as below:
+
+    function Movie(title){
+      this.title = title;
+      this.director =  null;
+      this.playMovie = ()=>console.log(`Now Playing - ${this.title}`) //Here "this" refers to outer function and is completely unneccesary.
+    }
+    m = new Movie("Batman")
+    m.playMovie()
+    console.log(m)
+
+### Below 2 forms are completely equivalent while second being better than first.
+
+    //with "this" in arrow function. "this" is not needed here
+    function Movie(title){
+      this.title = title;
+      this.director =  null;
+      this.playMovie = ()=>console.log(`Now Playing - ${this.title}`)
+    }
+    m1 = new Movie("Batman")
+    m1.playMovie()//Now Playing - Batman
+    console.log(m1)//Movie { title: 'Batman', director: null, playMovie: [Function] }
+
+    m2 = new Movie("Superman")
+    m2.playMovie()//Now Playing - Superman
+    console.log(m2)//Movie { title: 'Superman', director: null, playMovie: [Function] }
+
+    //without "this" in arrow function. Better
+    function Movie(title){
+      this.title = title;
+      this.director =  null;
+      this.playMovie = ()=>console.log(`Now Playing - ${title}`)
+    }
+    m1 = new Movie("Batman")
+    m1.playMovie()//Now Playing - Batman
+    console.log(m1)//Movie { title: 'Batman', director: null, playMovie: [Function] }
+
+    m2 = new Movie("Superman")
+    m2.playMovie()//Now Playing - Superman
+    console.log(m2)//Movie { title: 'Superman', director: null, playMovie: [Function] }
+
+### Another to achieve above is :
+
+    let m1 = {
+        "title" : "Batman",
+        "director" : "Chris"
+    }
+    let m2 = {
+        "title" : "Superman",
+        "director" : "Chris"
+    }
+
+    //let playMovie = () =>console.log(`Now Playing - ${this.title} by ${this.director}`) //undefined, arrow function bind "this" to outer function which here is global object
+    let playMovie = function(){
+        console.log(`Now Playing - ${this.title} by ${this.director}`)
+    } 
+    m1.play = playMovie
+    m2.play = playMovie
+
+    m1.play()
+    m2.play()
+
+
+### Return from constructors. Usually, constructors do not have a return statement. Their task is to write all necessary stuff into this, and it automatically becomes the result. But if there is a return statement, then the rule is simple:
+
+### If return is called with object, then it is returned instead of this.
+### If return is called with a primitive, it’s ignored.
