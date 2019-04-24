@@ -55,7 +55,7 @@
 
     If one operand in comparison operator is number other is converted to number as well.
     eg. "20" > 10 //true
-    but ""
+    
 
 #   If Else
 
@@ -158,7 +158,7 @@
     let user = new Object(); // "object constructor" syntax
     let user = {};  // "object literal" syntax
     
-##  key is stored as a string. Object property keys may be either of string type, or of symbol type. Not numbers, not booleans, only strings or symbols, these two types.
+##  key is stored as a string. Object property keys may be either of string type, or of symbol type ONLY. Not numbers, not booleans, only strings or symbols, these two types.
 
 ##  Square brackets allow property name to be result of any expression like from a variable:
 
@@ -216,6 +216,7 @@
     alert( "age" in user ); // true, user.age exists
     alert( user.age ); // undefined, user.age exists but value is undefined
     alert( user.address ); //undefined, user.address does not exist
+
 ### Do not use `name in user` in above code. JS engine will look for a variable name as key of the property
 
 ##  Walk over properties
@@ -385,7 +386,7 @@
 
 ##  Symbols in a literal
 
-### If we want to use a symbol in an object literal, we need square brackets.
+### If we want to use a symbol in an object literal, we need square brackets because `id` is a variable/computed property. Even if `id` were a string i.e. `let id = "userid"`, we would use square bracket [id] = 12
 
     let id = Symbol("id");
 
@@ -586,7 +587,7 @@
     m2.playMovie()//Now Playing - Superman
     console.log(m2)//Movie { title: 'Superman', director: null, playMovie: [Function] }
 
-### Another to achieve above is :
+### Another way to achieve above is :
 
     let m1 = {
         "title" : "Batman",
@@ -612,3 +613,39 @@
 
 ### If return is called with object, then it is returned instead of this.
 ### If return is called with a primitive, it’s ignored.
+
+#   Advanced Functions
+
+##  Rest parameters ...
+
+### ... literally mean “gather the remaining parameters into an array”. The rest parameters must be at the end. 
+### There is also a special "array-like object" named arguments that contains all arguments by their index. Hence you can use arguments.length, arguments[0] etc. Looks like [Arguments] { '0': 4, '1': 5, '2': 5, '3': 6 }
+### Arrow functions do not have "arguments". If we access the arguments object from an arrow function, it takes them from the outer “normal” function.
+
+    function sumAll(...numbers){
+        console.log(numbers.reduce((m, n) => m + n))
+        //Since arguments object is not an array, it does not support array functions. Below will generate an Error.
+        //console.log(arguments.reduce((m, n) => m + n))
+    }
+    sumAll(4,5,5,6)
+
+##  Spread operator ...
+
+### Does opposite of rest parameter. Spreads an iterable when passed as argument. Note difference between parameter and argument.
+
+    let numbers = [1,2,3]
+
+    function add(one, two, three){
+      console.log(one + two + three)
+    }
+
+    add(...numbers)
+
+### Hence, when `...` is used in function call, it spreads the array but when used as parameter, it combines the arguments into  an array.
+
+### Merging two arrays:
+
+    let arr1 = [1,2,3]
+    let arr2 = [4,5,6]
+    let merged = [...arr1, ...arr2]
+
