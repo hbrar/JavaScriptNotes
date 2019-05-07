@@ -110,7 +110,7 @@
     sayHi("John"); // Hello, John
 
     function sayHi(name) {
-    alert( `Hello, ${name}` );
+    console.log( `Hello, ${name}` );
     }
 
 ##  When a Function Declaration is made within a code block, it is visible everywhere inside that block. But not outside of it.
@@ -150,7 +150,7 @@
     let double = n => n * 2;
 
 ### If there are no arguments, parentheses should be empty (but they should be present):
-    let sayHi = () => alert("Hello!");
+    let sayHi = () => console.log("Hello!");
 
 #   Object
 
@@ -433,14 +433,14 @@
 
     let user = {
     sayHi: function() {
-        alert("Hello");
+        console.log("Hello");
     }
     };
 
     // method shorthand looks better, right?
     let user = {
     sayHi() { // same as "sayHi: function()"
-        alert("Hello");
+        console.log("Hello");
     }
     };
 
@@ -470,6 +470,11 @@
     user.sayHi() //Hi!, I am Jon
     admin['sayHi']() //Hi!, I am Snow
     greet() //undefined ...."this" is global object here which does not have variable "name". Global object is window in browser and module in Nodejs
+
+    //OR
+
+    greet.call(user) //arguments to function are passed after the object e.g. greet.call(user,arg1,arg2)
+    greet.call(admin)
 
 ### Example where "this" is easily lost
 
@@ -504,7 +509,7 @@
 
     function User(name) {
       // this = {};  (implicitly)
-
+      // this.__proto__ = User.prototype //sets correct prototype
       // add properties to this
       this.name = name;
       this.isAdmin = false;
@@ -611,7 +616,7 @@
 
 ### Return from constructors. Usually, constructors do not have a return statement. Their task is to write all necessary stuff into this, and it automatically becomes the result. But if there is a return statement, then the rule is simple:
 
-### If return is called with object, then it is returned instead of this.
+### If return is called with object, then it is returned instead of this. CAREFUL IT WON"T SET THE PROTOTYPE
 ### If return is called with a primitive, it’s ignored.
 
 #   Advanced Functions
@@ -649,3 +654,412 @@
     let arr2 = [4,5,6]
     let merged = [...arr1, ...arr2]
 
+##  Closure
+### A Function remembers the environment(lexical) at the time of its creation (via some hidden[[Environment property]])
+
+    let name = "Jon";
+
+    function foo(){
+      let name = "Snow";
+   
+      function bar(){
+        return `Hello ${name}`
+      }
+      return bar
+    }
+
+    let closure = foo() //foo returns bar. bar keeps a reference to its lexical(creation) environment i.e. variable "name"
+
+    console.log(closure()) //Hello Snow
+
+### why not just add the variable in lexical environment as property of function?
+
+    function foo(){
+      let inaccessibleName = "Snow";
+   
+      function bar(){
+        return `Hello ${bar.accessibleName}`
+      }
+
+      bar.accessibleName = "Snow";
+      return bar
+    }
+
+    let cousinOfClosure = foo()
+    console.log(cousinOfClosure()) //Hello Snow
+    console.log(cousinOfClosure.accessibleName) // Snow
+    console.log(inaccessibleName) // No way to access inaccessibleName variable outside of closure
+
+### The closure way makes variables/methods inaccessible to outside world 
+
+##  Scope of var and let
+
+### var has scope of function and hence leads to hoisting while let has block scope
+
+        
+    function foo(){
+        
+        console.log("First Name: " + firstname);//ReferenceError: firstname is not defined
+        console.log("Last Name:" + lastname); //Last Name:undefined
+        
+        {
+        let firstname = "Jon";
+        var lastname = "Snow"; //Variable declaration will be hoisted to top of function scope in which it is declared
+        }
+    }
+
+    foo()
+
+    //Equivalent code
+
+    function foo(){
+        
+        var firstname; //var Declaration is hoisted while let is not
+        
+        console.log("First Name: " + firstname);//ReferenceError: firstname is not defined
+        console.log("Last Name:" + lastname); //Last Name:undefined
+        
+        {
+        let firstname = "Jon";
+        lastname = "Snow"; //Variable declaration will be hoisted to top of function scope in which it is declared
+        }
+    }
+
+    foo()
+
+##  CACHING
+
+### CACHING IN FUNCTIONS
+
+    function slow(x){
+        return 2 * x
+    }
+
+    function cacheDecorator(func){
+
+        let cache = new Map();
+        
+        return function(x){
+        
+            // cache and func remain private as part of a closure
+        if (cache.has(x)){
+            return "Cached:" + cache.get(x);
+        }
+            
+        let result = func(x)
+        cache.set(x, result)
+        return "Non-Cached:" + result 
+        
+        }
+    }
+        
+    slow = cacheDecorator(slow)
+    console.log(slow(2)) // Not present in Cache, Run the slow function
+    console.log(slow(2)) // Fetches result from cache this time
+    console.log(slow(3)) // Not present in Cache, Run the slow function
+
+### CACHING IN METHODS is achieved using call/apply
+
+    //CALL vs APPLY
+    //without using call/apply
+    let user = {
+        name : "Jon",
+        sayHi : greet
+    }
+
+    let admin = {
+        name : "AdminJon",
+        sayHi : greet
+    }
+
+
+    function greet(phrase1, phrase2){
+        console.log(`${this.name} ${phrase1} ${phrase2}`);
+    }
+
+    user.sayHi("is a", "Human")
+    admin.sayHi("is a", "Super Human")
+
+    // Using call/apply
+
+    let user2 = {
+        name : "Jon",
+    }
+
+    let admin2 = {
+        name : "AdminJon",
+    }
+
+    greet.call(user2,"is a", "call-Human")
+    greet.apply(admin2, ["is an", "apply-Super Human"])
+
+    // Using spread
+    let randomArgs = ["is a","Robot"]
+    greet.call(user2, ...randomArgs)
+    greet.apply(admin2, randomArgs)
+
+    // CACHING IN METHODS is achieved using call/apply
+
+    let user = {
+        slow (x){
+        return 2 * x
+        }
+    }
+
+    function cacheDecorator(func){
+
+        let cache = new Map();
+        
+        return function(x){
+        
+        // cache and func remain private as part of a closure
+        if (cache.has(x)){
+            return "Cached:" + cache.get(x);
+        }
+            
+        let result = func.call(this,x)
+        cache.set(x, result)
+        return "Non-Cached:" + result 
+        
+        }
+    }
+        
+    user.slow = cacheDecorator(user.slow)
+    console.log(user.slow(2)) // Not present in Cache, Run the slow function
+    console.log(user.slow(2)) // Fetches result from cache this time
+    console.log(user.slow(3)) // Not present in Cache, Run the slow function
+
+#   Classes
+
+##  //Ways of creating objects
+
+    //1. Object Literal. Note that short form i.e. sayHi(){} is only valid in Object Literal Notation (so far...)
+
+    let fullname = "Peter Parker"
+    let peter = {
+        fullname,//for this way to work fullname must exist
+        sayHi(){
+            console.log(`Hello ${this.fullname}`)
+        }
+    }
+    peter.sayHi()
+
+    //2. Using Function Constructor
+
+    function User(name){
+        this.name = name;
+        this.sayHi = () => console.log(`Hello ${this.name}`)//Arrow function takes "this" from outer environment
+    }
+
+    let usr = new User("John")
+    usr.sayHi()
+
+    // 3. Using Classes
+
+    /*let name = "John"
+    let age = 24*/
+
+    class UserClass{ // Note it's not UserClass()
+        
+        
+        constructor(name, age){ //Any parameters are passed here instead of UserClass(name,age)
+            this.name = name,
+            this.age = age
+            /*
+            Incorrect way. Won't work even if variables are defined outside the class.
+            name,
+            age
+            */
+        }
+        
+        //Prototype methods
+        getName(){//Note that short hand syntax is valid here as well besides Object literal
+            return this.name
+        }
+        
+        getAge(){
+            return this.age
+        }
+        
+    }
+
+    _usr = new UserClass("John",27)
+    console.log(`${_usr.getName()} is ${_usr.getAge()} years old.`)
+
+### What class User {...} construct really does is:
+
+### 1. Creates a function named User, that becomes the result of the class declaration.
+### 2. The function code is taken from the constructor method (assumed empty if we don’t write such method).
+### 3. Stores all methods, such as sayHi, in User.prototype.
+
+##  STATIC METHODS
+
+    class User{
+        static display(){
+            //this === User and not class instance
+            //Objects of this class can't access display()
+            console.log("Static Method")
+        }
+    }
+    let john  = new User()
+    // john.display()   //TypeError: john.display is not a function
+    User.display()
+
+    // SAME AS BELOW
+
+    function NewUser(){
+        //Implicitly below code executes for constructor function
+        
+        //this = {}
+        // this.__proto__ = NewUser.prototype
+        //return this
+    }
+    NewUser.display = function(){
+        //display here, is a property of function NewUser and not of its prototype. 
+        //Hence it becomes inaccessible to objects created using "new"
+        console.log("Static Method")
+    }
+
+    
+    let peter =  new NewUser()
+
+    //static methods can only be accessed via class, not its instance objects
+    //peter.display()   //TypeError: peter.display is not a function
+
+    NewUser.display()
+
+##  Prototype methods
+
+    //PROTOTYPE METHODS
+    class User{
+        constructor(name){
+            this.name = name;
+        }
+        
+        display(){
+            //Every new object created will have acceess to display() via User.prototype.display
+            console.log("Prototype Method")
+        }
+    }
+    let john = new User()
+    john.display()
+
+    //SAME AS BELOW
+
+    function NewUser(name){
+        this.name = name;
+    }
+
+    NewUser.prototype.display = function(){
+        console.log("Prototype Method")
+    }
+
+    let peter = new NewUser()
+    peter.display()
+
+##  RETURNING EXPLICIT OBJECT CONSTRUCTOR FUNCTION
+
+    function Person(name, age){
+        // What if INSTEAD OF code below
+        
+        // this.name = name
+        // this.age =  age
+        
+        // You explicitly return an object
+        
+        return {
+            name,
+            age,
+        }
+
+    }
+
+    Person.prototype.display = function (){
+        console.log(`${this.name} is ${this.age} years old.`)    
+    }
+
+    let snow = new Person("Snow", 23)
+
+    snow.display()//TypeError: snow.display is not a function
+
+    //FIX - Explicitly Assign proto for each object
+    snow.__proto__ = Person.prototype
+    snow.display()//Snow is 23 years old.
+
+    // CAUSE
+    console.log(snow.__proto__ == Person.prototype)//false
+    console.log(snow.__proto__ == Object.prototype)//true
+
+    // BECAUSE
+    function BetterPerson(name, age){
+        
+        //this = {} //Implicitly executed
+        //this.__proto__ = BetterPerson.prototype //Implicitly executed.
+        
+        //Since above step was missing in Person, snow lost access to it's "apparent" prototype's properties
+        
+        this.name = name
+        this.age =  age
+        
+        //return this //Implicitly executed
+    }
+
+    BetterPerson.prototype.display = function (){
+        console.log(`${this.name} is ${this.age} years old.`)    
+    }
+
+    let bettersnow = new BetterPerson("Better Snow", 23)
+    bettersnow.display()
+    console.log(bettersnow.__proto__ == BetterPerson.prototype)
+
+    CLASS
+
+    class PersonClass {
+        
+        constructor(name, age){
+        this.name = name;
+        this.age =  age;
+        }        
+        
+    //Prototype method
+        myName(){
+            console.log("my name is " + this.name);
+        }
+            
+    }
+
+    //IS EQUIVALENT TO
+
+    function Person(name, age){
+        this.name = name;
+        this.age = age;
+    }
+
+    Person.prototype.myName = function(){
+        console.log("my name is " + this.name);
+    }
+
+    let p1 = new PersonClass("P1", 45);
+    let p2 =  new Person("P2",34);
+    p1.myName();
+    p2.myName();
+
+    // CONCLUSION
+    // class creates a function named same as class name and assigns code inside constructor to the body of function
+    // Prototype method is same as assigning method to prototype of Constructor function
+
+    PersonClass.prototype.myName.call(p1)//works
+    console.log(PersonClass.prototype)//works if you see in chrome but in node console does not show 
+    console.dir(PersonClass.prototype)// no change
+
+    //https://stackoverflow.com/questions/36374190/why-are-my-class-prototypes-not-working
+    //Prototype methods are non-enumerable A class definition sets enumerable flag to false for all methods in the "prototype".
+    //That’s good, because if we for..in over an object, we usually don’t want its class methods.
+
+    console.log(PersonClass.prototype.myName)
+    console.log(Person.prototype)
+
+    // SO HOW TO CHECK METHODS OF A CLASS
+
+    //Returns both enumerable and non enumerable properties
+    console.log(Object.getOwnPropertyNames(PersonClass.prototype))//[ 'constructor', 'myName' ]
